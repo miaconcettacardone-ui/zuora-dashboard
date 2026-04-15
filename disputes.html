@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Zuora · Disputes</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --tb:#1A1F2E;--sb:#0D1B2E;--sbh:rgba(255,255,255,.07);
+  --teal:#00B37D;--teal2:#009968;--teal-bg:#E8F8F2;--teal-bd:#9FD9C0;
+  --green-dot:#00C27A;
+  --chart-g:#2DB87A;--chart-gf:rgba(45,184,122,0.12);
+  --tour-bg:#C5EDE4;--tour-title:#0D1F3C;--tour-body:#1a3d30;--tour-btn:#1C2B3A;
+  --white:#fff;--bg:#F4F5F7;--card:#fff;
+  --bd:#E5E7EB;--bd2:#D1D5DB;
+  --t1:#111827;--t2:#374151;--t3:#6B7280;--t4:#9CA3AF;
+  --green:#059669;--gbg:#ECFDF5;--gbd:#A7F3D0;
+  --red:#DC2626;--rbg:#FEF2F2;--rbd:#FECACA;
+  --yellow:#D97706;--ybg:#FFFBEB;--ybd:#FDE68A;
+  --blue:#1D4ED8;--bbg:#EFF6FF;--bbd:#BFDBFE;
+  --orange:#EA580C;--obg:#FFF7ED;--obd:#FED7AA;
+  --purple:#7C3AED;--pbg:#F5F3FF;--pbd:#DDD6FE;
+  --r:6px;--r2:8px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.1);
+  --font:"Plus Jakarta Sans",system-ui,sans-serif;
+  --mono:"JetBrains Mono",monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--font);font-size:13px;line-height:1.5;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* TOPBAR */
+#topbar{height:50px;background:var(--tb);display:flex;align-items:center;padding:0 14px;gap:8px;flex-shrink:0;z-index:200}
+.tb-menu{width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:4px;color:rgba(255,255,255,.55)}
+.tb-menu:hover{background:rgba(255,255,255,.08)}
+.tb-logo{display:flex;align-items:center;gap:7px;margin-right:8px;text-decoration:none}
+.tb-logo-z{width:22px;height:22px;flex-shrink:0}
+.tb-logo-name{font-size:14px;font-weight:800;color:#fff;letter-spacing:.5px}
+.tb-logo-prod{font-size:11px;color:var(--teal);margin-left:1px;font-weight:500}
+.tb-search{flex:1;max-width:360px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:0 12px;height:32px;display:flex;align-items:center;gap:8px}
+.tb-search input{background:transparent;border:none;outline:none;font-size:12.5px;color:rgba(255,255,255,.75);width:100%;font-family:var(--font)}
+.tb-search input::placeholder{color:rgba(255,255,255,.3)}
+.tb-search svg{color:rgba(255,255,255,.35);flex-shrink:0}
+.tb-search kbd{font-size:9px;color:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.14);border-radius:3px;padding:1px 5px;font-family:var(--mono);flex-shrink:0}
+.tb-r{display:flex;align-items:center;gap:5px;margin-left:auto}
+.tb-tenant{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);height:30px;padding:0 10px;font-size:11.5px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:5px;cursor:pointer}
+.tb-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;color:rgba(255,255,255,.55);cursor:pointer;background:transparent;border:none;transition:background .1s}
+.tb-icon:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.9)}
+.tb-av{width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;cursor:pointer;border:2px solid rgba(255,255,255,.18)}
+.tb-caret{color:rgba(255,255,255,.4);font-size:10px;cursor:pointer;margin-left:-2px}
+
+/* BODY */
+#body{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+#sidebar{width:184px;min-width:184px;background:var(--sb);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;flex-shrink:0}
+#sidebar::-webkit-scrollbar{width:0}
+.sb-list{flex:1;padding:6px 0 10px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 16px;color:rgba(255,255,255,.55);cursor:pointer;font-size:13px;font-weight:500;user-select:none;position:relative;transition:background .1s,color .1s}
+.sb-item:hover{background:var(--sbh);color:rgba(255,255,255,.9)}
+.sb-item.active{color:#fff;background:rgba(255,255,255,.08)}
+.sb-item.active .dot{opacity:1}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green-dot);flex-shrink:0;opacity:0;margin-right:-2px}
+.sb-icon{width:16px;height:16px;flex-shrink:0;opacity:.65}
+.sb-item:hover .sb-icon,.sb-item.active .sb-icon{opacity:1}
+.sb-chev{margin-left:auto;font-size:10px;color:rgba(255,255,255,.3);transition:transform .15s;flex-shrink:0}
+.sb-item.open .sb-chev{transform:rotate(180deg)}
+.sb-sub{overflow:hidden;max-height:0;transition:max-height .2s ease}
+.sb-sub.open{max-height:300px}
+.sb-sub-item{padding:6px 16px 6px 40px;color:rgba(255,255,255,.38);font-size:12.5px;cursor:pointer;transition:color .1s,background .1s;display:block}
+.sb-sub-item:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.04)}
+.sb-sub-item.active{color:var(--green-dot)}
+.sb-div{height:1px;background:rgba(255,255,255,.07);margin:4px 0}
+.sb-foot{border-top:1px solid rgba(255,255,255,.07);padding:6px 0}
+.sb-user{display:flex;align-items:center;gap:9px;padding:8px 16px;cursor:pointer}
+.sb-user:hover{background:var(--sbh)}
+.sb-uav{width:22px;height:22px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-uname{font-size:11px;color:rgba(255,255,255,.5)}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.bc-bar{height:36px;background:#fff;border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 24px;gap:6px;font-size:12px;color:var(--t3);flex-shrink:0}
+.bc-bar a{color:var(--teal);cursor:pointer;text-decoration:none}
+.bc-sep{color:var(--bd2)}
+#content{flex:1;overflow-y:auto;padding:20px 22px}
+#content::-webkit-scrollbar{width:5px}
+#content::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+.view{display:none}
+.view.active{display:block;animation:fi .15s ease}
+@keyframes fi{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* LAYOUT */
+.pg-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px}
+.pg-title{font-size:20px;font-weight:700;color:var(--t1);letter-spacing:-.3px}
+.pg-sub{font-size:12px;color:var(--t3);margin-top:2px}
+.pg-acts{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.btn{border-radius:var(--r);padding:6px 14px;font-size:12px;font-family:var(--font);font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:5px;height:32px;transition:all .1s;white-space:nowrap}
+.btn-ghost{background:#fff;border:1px solid var(--bd);color:var(--t2)}
+.btn-ghost:hover{border-color:var(--bd2);background:#F9FAFB}
+.btn-navy{background:var(--sb);color:#fff}
+.btn-navy:hover{background:#162540}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-teal:hover{background:var(--teal2)}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-orange:hover{background:#C2410C}
+.btn-sm{padding:4px 10px;font-size:11px;height:28px}
+.btn-upgrade{background:linear-gradient(135deg,#F97316,#EF4444);color:#fff;font-weight:700;font-size:12px}
+.btn-upgrade:hover{opacity:.92}
+.sel{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:0 10px;height:32px;font-size:12px;font-family:var(--font);color:var(--t2);cursor:pointer;outline:none}
+
+/* UPGRADE BANNER */
+.upgrade-banner{background:linear-gradient(135deg,#0D1B2E 0%,#1a3a2e 100%);border-radius:var(--r2);padding:13px 18px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
+.upgrade-banner-icon{font-size:28px;flex-shrink:0}
+.upgrade-banner-text h3{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px}
+.upgrade-banner-text p{font-size:12px;color:rgba(255,255,255,.7);line-height:1.5}
+.upgrade-banner-text strong{color:var(--green-dot)}
+.upgrade-banner-actions{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
+
+/* ALERT BANNER */
+.alert-bar{background:var(--rbg);border:1px solid var(--rbd);border-left:3px solid var(--red);border-radius:var(--r2);padding:10px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#991B1B;overflow:visible}
+.alert-bar strong{font-weight:700}
+
+/* KPIS */
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.krow5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px}
+.kcard{background:var(--card);border:1px solid var(--bd);border-radius:var(--r2);padding:13px 16px;box-shadow:var(--sh);position:relative;transition:box-shadow .15s}
+.kcard:hover{box-shadow:var(--sh2)}
+.kcard-status{position:absolute;top:14px;right:14px;width:8px;height:8px;border-radius:50%}
+.kl{font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:500}
+.kv{font-size:32px;font-weight:800;letter-spacing:-.8px;line-height:1;margin-bottom:4px}
+.kd{font-size:11px;font-weight:500}
+.kh{font-size:10px;color:var(--t4);margin-top:2px}
+.up{color:var(--green)}.dn{color:var(--red)}.fl{color:var(--t4)}.warn{color:var(--yellow)}.crit{color:var(--red);font-weight:700}
+.kv.good{color:var(--green)}.kv.warn{color:var(--yellow)}.kv.bad{color:var(--red)}.kv.dark{color:var(--t1)}
+
+/* RISK METER */
+.risk-meter{height:6px;border-radius:4px;background:var(--bg);overflow:hidden;margin:6px 0 3px;border:1px solid var(--bd)}
+.risk-fill{height:100%;border-radius:4px;transition:width .3s}
+
+/* GRID */
+.grid{display:grid;gap:12px;margin-bottom:16px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+.g21{grid-template-columns:2fr 1fr}
+.g12{grid-template-columns:1fr 2fr}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r2);box-shadow:var(--sh)}
+.cp{padding:16px 18px}
+.ct{font-size:13px;font-weight:600;color:var(--t1)}
+.csub{font-size:11px;color:var(--t4);margin-top:2px;margin-bottom:14px}
+.leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.li{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.sec-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-l{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--t4)}
+.sec-a{font-size:12px;color:var(--teal);cursor:pointer;font-weight:500}
+.sec-a:hover{text-decoration:underline}
+
+/* TABLES */
+.tc{background:var(--card);border:1px solid var(--bd);border-radius:var(--r2);box-shadow:var(--sh);margin-bottom:16px;overflow:hidden}
+.th{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--bd)}
+.tt{font-size:13px;font-weight:600;color:var(--t1)}
+.ta{display:flex;gap:8px;align-items:center}
+.srch{background:var(--bg);border:1px solid var(--bd);border-radius:var(--r);padding:0 10px;height:30px;font-size:12px;font-family:var(--font);color:var(--t1);width:190px;outline:none}
+.srch:focus{border-color:var(--teal);background:#fff}
+.srch::placeholder{color:var(--t4)}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10.5px;font-weight:600;color:var(--t4);padding:8px 20px;text-transform:uppercase;letter-spacing:.5px;background:#FAFAFA;border-bottom:1px solid var(--bd)}
+tbody td{padding:10px 20px;border-top:1px solid #F3F4F6;font-size:12.5px;color:var(--t2);vertical-align:middle}
+tbody tr:hover td{background:#FAFAFA;cursor:pointer}
+tbody td strong{color:var(--t1);font-weight:600}
+.mn{font-family:var(--mono);font-size:11.5px}
+
+/* PILLS */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:600}
+.pill::before{content:"";width:5px;height:5px;border-radius:50%}
+.pa{background:var(--gbg);color:#065F46;border:1px solid var(--gbd)}.pa::before{background:#10B981}
+.pr{background:var(--ybg);color:#92400E;border:1px solid var(--ybd)}.pr::before{background:#F59E0B}
+.pc{background:var(--rbg);color:#991B1B;border:1px solid var(--rbd)}.pc::before{background:#EF4444}
+.pt{background:var(--bbg);color:#1E40AF;border:1px solid var(--bbd)}.pt::before{background:#3B82F6}
+.pp{background:var(--gbg);color:#065F46;border:1px solid var(--gbd)}.pp::before{background:#10B981}
+.po{background:var(--rbg);color:#991B1B;border:1px solid var(--rbd)}.po::before{background:#EF4444}
+.px{background:var(--bbg);color:#1E40AF;border:1px solid var(--bbd)}.px::before{background:#3B82F6}
+.pw{background:var(--ybg);color:#92400E;border:1px solid var(--ybd)}.pw::before{background:#F59E0B}
+.pv{background:var(--obg);color:#9A3412;border:1px solid var(--obd)}.pv::before{background:var(--orange)}
+.pg{background:var(--gbg);color:#065F46;border:1px solid var(--gbd)}.pg::before{background:#10B981}
+
+/* STAT ROW */
+.sr{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6}
+.sr:last-child{border-bottom:none}
+
+/* BADGE */
+.badge-red{background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px}
+
+/* TIMELINE */
+.tl-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #F3F4F6;align-items:flex-start}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-text{font-size:12px;color:var(--t2);line-height:1.5}
+.tl-time{font-size:10.5px;color:var(--t4);margin-top:2px}
+
+/* GEO MAP PLACEHOLDER */
+.geo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.geo-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F3F4F6}
+.geo-flag{font-size:16px;flex-shrink:0}
+.geo-bar-wrap{flex:1}
+.geo-bar{height:5px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:3px}
+.geo-fill{height:100%;border-radius:3px}
+.geo-pct{font-size:10.5px;color:var(--t4);flex-shrink:0;width:32px;text-align:right}
+
+/* WEBHOOK */
+.webhook-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F3F4F6}
+.webhook-row:last-child{border-bottom:none}
+.webhook-name{font-size:12.5px;font-weight:600;color:var(--t1)}
+.webhook-url{font-size:11px;color:var(--t4);font-family:var(--mono);margin-top:2px}
+.toggle{width:36px;height:20px;border-radius:10px;background:var(--bd);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;border:none}
+.toggle.on{background:var(--teal)}
+.toggle::after{content:"";width:14px;height:14px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle.on::after{left:19px}
+
+/* API KEY */
+.api-field{background:#FAFAFA;border:1px solid var(--bd);border-radius:var(--r);padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--t2);display:flex;align-items:center;justify-content:space-between}
+.api-field span{color:var(--t4)}
+
+/* TOUR */
+#tour-ov{position:fixed;inset:0;z-index:9999;pointer-events:none;display:none}
+.tour-spot{position:absolute;border-radius:var(--r2);pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.38);transition:all .3s ease}
+.tour-card{position:absolute;background:var(--tour-bg);border-radius:10px;padding:20px 22px 16px;width:340px;pointer-events:all;box-shadow:0 4px 24px rgba(0,0,0,.15);transition:all .3s ease}
+
+.tour-num{font-size:11px;color:var(--tour-body);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tour-back{background:none;border:none;cursor:pointer;color:var(--tour-body);font-size:16px;padding:0;line-height:1}
+.tour-title{font-size:15px;font-weight:800;color:var(--tour-title);margin-bottom:8px;line-height:1.3}
+.tour-body{font-size:13px;color:var(--tour-body);line-height:1.65;margin-bottom:16px}
+.tour-footer{display:flex;align-items:center;justify-content:space-between}
+.tour-skip{background:none;border:none;color:var(--tour-body);font-size:12px;cursor:pointer;font-family:var(--font);opacity:.6}
+.tour-skip:hover{opacity:1}
+.tour-next{background:var(--tour-btn);color:#fff;border:none;border-radius:var(--r);padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.tour-next:hover{background:#0D1B2E}
+.tour-brand{font-size:10px;color:rgba(0,0,0,.3);margin-top:10px;text-align:right}
+
+@media(max-width:1100px){.krow,.krow5{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="tb-menu"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+  <a class="tb-logo" href="#" onclick="nav('overview');return false">
+    <svg class="tb-logo-z" viewBox="0 0 22 22" fill="none"><rect width="22" height="22" rx="4" fill="#00B37D"/><path d="M4 5h14L10.5 17H4V5z" fill="white"/><path d="M18 17H4L12 5h6v12z" fill="rgba(255,255,255,.25)"/></svg>
+    <span class="tb-logo-name">ZUORA</span>
+    <span class="tb-logo-prod">billing</span>
+  </a>
+  <div class="tb-search">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search"/>
+    <kbd>⌘K</kbd>
+  </div>
+  <div class="tb-r">
+    <div class="tb-tenant"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>NOAM Demo Tenant<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <button class="tb-icon"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+    <button class="tb-icon"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+    <button class="tb-icon"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
+    <div class="tb-av">J</div>
+    <span class="tb-caret">▾</span>
+  </div>
+</div>
+
+<div id="body">
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-list">
+    <!-- Zuora native items (greyed, locked) -->
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Home</div>
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Customers<span class="sb-chev">∨</span></div>
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>Products<span class="sb-chev">∨</span></div>
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Billing<span class="sb-chev">∨</span></div>
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="2"/></svg>Payments<span class="sb-chev">∨</span></div>
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Finance<span class="sb-chev">∨</span></div>
+    <div class="sb-div"></div>
+    <!-- DISPUTES — our app -->
+    <div class="sb-item active" data-par="disputes" id="n-disputes">
+      <span class="dot"></span>
+      <svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Disputes
+      <span class="sb-chev">∨</span>
+    </div>
+    <div class="sb-sub open" id="sub-disputes">
+      <div class="sb-sub-item active" data-view="overview">Overview</div>
+      <div class="sb-sub-item" data-view="cases">Case Management</div>
+      <div class="sb-sub-item" data-view="ert">ERT Notifications</div>
+      <div class="sb-sub-item" data-view="alerts">Alerts</div>
+      <div class="sb-sub-item" data-view="reports">Reports</div>
+      <div class="sb-sub-item" data-view="webhooks">Webhooks</div>
+      <div class="sb-sub-item" data-view="api">API Connect</div>
+    </div>
+    <div class="sb-div"></div>
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg>Marketplace<span class="sb-chev">∨</span></div>
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Platform<span class="sb-chev">∨</span></div>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-item" style="opacity:.45;cursor:default"><span class="dot"></span><svg class="sb-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Training Center</div>
+    <div class="sb-user"><div class="sb-uav">JD</div><div class="sb-uname">Jane Doe · CPO</div></div>
+  </div>
+</nav>
+
+<div id="main">
+  <div class="bc-bar">
+    <a onclick="nav('overview');return false">Home</a>
+    <span class="bc-sep">/</span>
+    <span>Disputes</span>
+    <span class="bc-sep" id="bc-sep2"></span>
+    <span id="bc-page"></span>
+  </div>
+  <div id="content">
+
+<!-- ══════════ OVERVIEW ══════════ -->
+<div class="view active" id="view-overview">
+  <div class="pg-hdr">
+    <div><div class="pg-title">Chargeback Analytics</div><div class="pg-sub">NOAM Demo Tenant · Last 90 days · Updated 2 min ago</div></div>
+    <div class="pg-acts">
+      <select class="sel"><option>Last 90 days</option><option>Last 30 days</option><option>Last 6 months</option><option>YTD</option><option>Custom range</option></select>
+
+    </div>
+  </div>
+
+  <div class="upgrade-banner">
+    <div class="upgrade-banner-icon">🛡️</div>
+    <div class="upgrade-banner-text">
+      <h3>You're losing $47,200/month in uncontested chargebacks</h3>
+      <p>Our AI automatically fights winnable chargebacks and recovers revenue. Average win rate: <strong>68%</strong>. Zero effort on your end. <strong>Activate now and recover your first chargeback free.</strong></p>
+    </div>
+    <div class="upgrade-banner-actions">
+      <button class="btn btn-upgrade" onclick="nav('api')">⚡ Upgrade — Recover Revenue</button>
+    </div>
+  </div>
+
+  <div class="alert-bar">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span><strong>⚠️ Ratio alert:</strong> Your chargeback-to-transaction ratio hit <strong>1.02%</strong> — Visa's monitoring threshold is 1.0%. You have 18 days to reduce this before entering the dispute monitoring program.</span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="krow5">
+    <div class="kcard">
+      <div class="kcard-status" style="background:var(--red)"></div>
+      <div class="kl">CB-to-Transaction Ratio</div>
+      <div class="kv bad">1.02%</div>
+      <div class="kd dn">▲ 0.18pp vs last period</div>
+      <div class="risk-meter"><div class="risk-fill" style="width:85%;background:var(--red)"></div></div>
+      <div class="kh" style="color:var(--red);font-weight:600">⚠️ Visa threshold: 1.0%</div>
+    </div>
+    <div class="kcard">
+      <div class="kcard-status" style="background:var(--yellow)"></div>
+      <div class="kl">Total Chargebacks</div>
+      <div class="kv warn">284</div>
+      <div class="kd dn">▲ 47 vs last period</div>
+      <div class="risk-meter"><div class="risk-fill" style="width:62%;background:var(--yellow)"></div></div>
+      <div class="kh">$214,800 total exposure</div>
+    </div>
+    <div class="kcard">
+      <div class="kcard-status" style="background:var(--red)"></div>
+      <div class="kl">Uncontested (Revenue Lost)</div>
+      <div class="kv bad">$47,200</div>
+      <div class="kd dn">▲ $8,100 vs last period</div>
+      <div class="risk-meter"><div class="risk-fill" style="width:78%;background:var(--red)"></div></div>
+      <div class="kh" style="color:var(--red)">189 cases never disputed</div>
+    </div>
+    <div class="kcard">
+      <div class="kcard-status" style="background:var(--yellow)"></div>
+      <div class="kl">Win Rate (Contested)</div>
+      <div class="kv warn">34%</div>
+      <div class="kd fl">Industry avg: 68%</div>
+      <div class="risk-meter"><div class="risk-fill" style="width:34%;background:var(--yellow)"></div></div>
+      <div class="kh">95 of 284 cases fought</div>
+    </div>
+    <div class="kcard">
+      <div class="kcard-status" style="background:var(--green)"></div>
+      <div class="kl">Revenue Recovered</div>
+      <div class="kv good">$23,100</div>
+      <div class="kd up">▲ $3,200 vs last period</div>
+      <div class="risk-meter"><div class="risk-fill" style="width:32%;background:var(--chart-g)"></div></div>
+      <div class="kh">Potential if auto-rep: <strong style="color:var(--chart-g)">$68,400</strong></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="grid g21">
+    <div class="card cp">
+      <div class="ct">Chargeback volume & ratio trend</div>
+      <div class="csub">Monthly — Jan 2025 → Mar 2025</div>
+      <div style="height:185px"><canvas id="c-trend"></canvas></div>
+      <div class="leg"><div class="li"><div class="ld" style="background:var(--red)"></div>Chargeback count</div><div class="li"><div class="ld" style="background:var(--chart-g)"></div>CB ratio %</div></div>
+    </div>
+    <div class="card cp">
+      <div class="ct">Dispute outcomes</div>
+      <div class="csub">Last 90 days</div>
+      <div style="height:185px"><canvas id="c-outcomes"></canvas></div>
+      <div class="leg" style="flex-direction:column;gap:6px;margin-top:10px">
+        <div class="li"><div class="ld" style="background:#DC2626"></div>Uncontested loss — $47,200 (66%)</div>
+        <div class="li"><div class="ld" style="background:#F59E0B"></div>Contested, lost — $16,800 (23%)</div>
+        <div class="li"><div class="ld" style="background:#2DB87A"></div>Won / recovered — $23,100 (11%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="grid g3">
+    <div class="card cp">
+      <div class="ct">Top reason codes</div>
+      <div class="csub">By volume — last 90 days</div>
+      <div style="height:155px"><canvas id="c-reasons"></canvas></div>
+    </div>
+    <div class="card cp">
+      <div class="ct">Fraud by geography</div>
+      <div class="csub">Chargebacks by origin country</div>
+      <div class="geo-grid">
+        <div class="geo-item"><span class="geo-flag">🇺🇸</span><div class="geo-bar-wrap"><div style="font-size:12px;font-weight:600;color:var(--t1)">United States</div><div class="geo-bar"><div class="geo-fill" style="width:72%;background:var(--red)"></div></div></div><span class="geo-pct" style="color:var(--red)">72%</span></div>
+        <div class="geo-item"><span class="geo-flag">🇬🇧</span><div class="geo-bar-wrap"><div style="font-size:12px;font-weight:600;color:var(--t1)">United Kingdom</div><div class="geo-bar"><div class="geo-fill" style="width:12%;background:var(--yellow)"></div></div></div><span class="geo-pct" style="color:var(--yellow)">12%</span></div>
+        <div class="geo-item"><span class="geo-flag">🇨🇦</span><div class="geo-bar-wrap"><div style="font-size:12px;font-weight:600;color:var(--t1)">Canada</div><div class="geo-bar"><div class="geo-fill" style="width:8%;background:var(--yellow)"></div></div></div><span class="geo-pct" style="color:var(--yellow)">8%</span></div>
+        <div class="geo-item"><span class="geo-flag">🇩🇪</span><div class="geo-bar-wrap"><div style="font-size:12px;font-weight:600;color:var(--t1)">Germany</div><div class="geo-bar"><div class="geo-fill" style="width:4%;background:var(--chart-g)"></div></div></div><span class="geo-pct" style="color:var(--chart-g)">4%</span></div>
+        <div class="geo-item"><span class="geo-flag">🇦🇺</span><div class="geo-bar-wrap"><div style="font-size:12px;font-weight:600;color:var(--t1)">Australia</div><div class="geo-bar"><div class="geo-fill" style="width:2%;background:var(--chart-g)"></div></div></div><span class="geo-pct" style="color:var(--chart-g)">2%</span></div>
+        <div class="geo-item"><span class="geo-flag">🌍</span><div class="geo-bar-wrap"><div style="font-size:12px;font-weight:600;color:var(--t1)">Other</div><div class="geo-bar"><div class="geo-fill" style="width:2%;background:var(--bd2)"></div></div></div><span class="geo-pct">2%</span></div>
+      </div>
+    </div>
+    <div class="card cp">
+      <div class="ct">Repeat disputers</div>
+      <div class="csub">Customers with 2+ chargebacks (90d)</div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">2 chargebacks</span><span style="font-size:12px;font-weight:600;color:var(--yellow)">41 customers</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">3–5 chargebacks</span><span style="font-size:12px;font-weight:600;color:var(--orange)">18 customers</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">6–10 chargebacks</span><span style="font-size:12px;font-weight:600;color:var(--red)">7 customers</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">10+ chargebacks</span><span style="font-size:12px;font-weight:600;color:var(--red);font-weight:800">3 customers 🚨</span></div>
+      <div style="margin-top:14px;padding:10px;background:var(--rbg);border-radius:var(--r);border:1px solid var(--rbd)">
+        <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px">TOP ABUSER</div>
+        <div style="font-size:12px;color:var(--t1);font-weight:600">customer_id: 44821</div>
+        <div style="font-size:11px;color:var(--t3)">14 chargebacks · $4,200 disputed · Block recommended</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 3 -->
+  <div class="grid g2">
+    <div class="card cp">
+      <div class="ct">CB rate by product / plan</div>
+      <div class="csub">Which products drive the most disputes</div>
+      <div style="height:155px"><canvas id="c-products"></canvas></div>
+    </div>
+    <div class="card cp">
+      <div class="ct">Revenue recovery opportunity</div>
+      <div class="csub">What auto-representment could recover for you</div>
+      <div style="height:155px"><canvas id="c-recovery"></canvas></div>
+      <div style="margin-top:14px;background:linear-gradient(135deg,#0D1B2E,#1a3a2e);border-radius:var(--r);padding:12px 14px">
+        <div style="font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">💡 Auto-representment projection</div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,.75);line-height:1.6">At our <strong style="color:var(--green-dot)">68% industry win rate</strong>, auto-representment would recover an estimated <strong style="color:var(--green-dot)">$68,400/month</strong> — 3.4× more than your current manual effort.</div>
+        <button class="btn btn-upgrade" style="margin-top:10px;width:100%;justify-content:center" onclick="nav('api')">⚡ Activate Now — First Month Free</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT CBs TABLE -->
+  <div class="sec-h" style="margin-top:0"><span class="sec-l">Recent chargebacks</span><span class="sec-a" onclick="nav('cases')">View all cases →</span></div>
+  <div class="tc" id="t-recent">
+    <div class="th"><div class="tt">Latest disputes</div><div class="ta"><input class="srch" placeholder="Search disputes…" oninput="filterTable(this,'t-recent')"/><select class="sel" style="height:30px;font-size:11px"><option>All statuses</option><option>Open</option><option>Won</option><option>Lost</option></select></div></div>
+    <table><thead><tr><th>Case ID</th><th>Customer</th><th>Product</th><th>Amount</th><th>Reason code</th><th>Card network</th><th>Filed</th><th>Deadline</th><th>Status</th><th>Action</th></tr></thead><tbody>
+      <tr><td class="mn">CB-00291</td><td><strong>Acme Corp</strong></td><td>Enterprise Plan</td><td class="mn">$18,400</td><td>10.4 — Fraud</td><td>Visa</td><td>Apr 12</td><td style="color:var(--red);font-weight:600">Apr 19 🔥</td><td><span class="pill pc">Open</span></td><td><button class="btn btn-teal btn-sm">Fight</button></td></tr>
+      <tr><td class="mn">CB-00290</td><td><strong>Brightwave Inc</strong></td><td>Professional</td><td class="mn">$5,200</td><td>13.1 — Not received</td><td>Mastercard</td><td>Apr 10</td><td style="color:var(--yellow);font-weight:600">Apr 25</td><td><span class="pill pc">Open</span></td><td><button class="btn btn-teal btn-sm">Fight</button></td></tr>
+      <tr><td class="mn">CB-00289</td><td><strong>Helix Cloud</strong></td><td>Enterprise 3-Yr</td><td class="mn">$2,400</td><td>10.5 — Visa fraud</td><td>Visa</td><td>Apr 8</td><td>Apr 28</td><td><span class="pill pp">Won</span></td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+      <tr><td class="mn">CB-00288</td><td><strong>Ironvault Co</strong></td><td>Starter</td><td class="mn">$890</td><td>4853 — Services</td><td>Mastercard</td><td>Apr 5</td><td>Apr 20</td><td><span class="pill po">Lost</span></td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+      <tr><td class="mn">CB-00287</td><td><strong>Dataloop AI</strong></td><td>Starter Trial</td><td class="mn">$890</td><td>10.4 — Fraud</td><td>Amex</td><td>Apr 3</td><td style="color:var(--red);font-weight:600">Apr 17 🔥</td><td><span class="pill pc">Open</span></td><td><button class="btn btn-teal btn-sm">Fight</button></td></tr>
+      <tr><td class="mn">CB-00286</td><td><strong>GridPoint Labs</strong></td><td>Professional</td><td class="mn">$4,500</td><td>41 — Cancelled</td><td>Discover</td><td>Mar 28</td><td>Apr 18</td><td><span class="pill pc">Open</span></td><td><button class="btn btn-teal btn-sm">Fight</button></td></tr>
+      <tr><td class="mn">CB-00285</td><td><strong>Crestline SaaS</strong></td><td>Enterprise</td><td class="mn">$24,100</td><td>10.4 — Fraud</td><td>Visa</td><td>Mar 25</td><td>Expired</td><td><span class="pill po">Uncontested</span></td><td><button class="btn btn-orange btn-sm">Was winnable</button></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- ══════════ CASE MANAGEMENT ══════════ -->
+<div class="view" id="view-cases">
+  <div class="pg-hdr"><div><div class="pg-title">Case Management</div><div class="pg-sub">All disputes, evidence submission, and tracking</div></div>
+  <div class="pg-acts"><button class="btn btn-ghost">Export</button><button class="btn btn-upgrade" onclick="nav('api')">⚡ Enable Auto-Fight</button></div></div>
+  <div class="krow">
+    <div class="kcard"><div class="kl">Open Cases</div><div class="kv warn">47</div><div class="kd dn">▲ 12 this week</div><div class="kh">$89,400 at risk</div></div>
+    <div class="kcard"><div class="kl">Expiring within 7 days</div><div class="kv bad">9</div><div class="kd crit">Immediate action needed</div><div class="kh">$18,700 will be forfeited</div></div>
+    <div class="kcard"><div class="kl">Won (last 90d)</div><div class="kv good">32</div><div class="kd up">34% win rate</div><div class="kh">$23,100 recovered</div></div>
+    <div class="kcard"><div class="kl">Avg Response Time</div><div class="kv warn">4.2d</div><div class="kd fl">Industry best: &lt;24hr</div><div class="kh">Auto-rep: instant ⚡</div></div>
+  </div>
+  <div class="tc" id="t-cases">
+    <div class="th"><div class="tt">All dispute cases</div><div class="ta"><input class="srch" placeholder="Search cases…" oninput="filterTable(this,'t-cases')"/><select class="sel" style="height:30px;font-size:11px"><option>All</option><option>Open</option><option>Expiring soon</option><option>Won</option><option>Lost</option></select><button class="btn btn-ghost btn-sm">Filter</button></div></div>
+    <table><thead><tr><th>Case ID</th><th>Customer</th><th>Amount</th><th>Network</th><th>Reason</th><th>Filed</th><th>Deadline</th><th>Evidence</th><th>Status</th><th></th></tr></thead><tbody>
+      <tr><td class="mn">CB-00291</td><td><strong>Acme Corp</strong></td><td class="mn">$18,400</td><td>Visa</td><td>10.4 Fraud</td><td>Apr 12</td><td style="color:var(--red);font-weight:700">Apr 19 🔥</td><td><span class="pill po">None</span></td><td><span class="pill pc">Open</span></td><td><button class="btn btn-teal btn-sm">Submit evidence</button></td></tr>
+      <tr><td class="mn">CB-00290</td><td><strong>Brightwave Inc</strong></td><td class="mn">$5,200</td><td>Mastercard</td><td>13.1 Not received</td><td>Apr 10</td><td style="color:var(--yellow);font-weight:600">Apr 25</td><td><span class="pill pw">Partial</span></td><td><span class="pill pc">Open</span></td><td><button class="btn btn-teal btn-sm">Submit evidence</button></td></tr>
+      <tr><td class="mn">CB-00289</td><td><strong>Helix Cloud</strong></td><td class="mn">$2,400</td><td>Visa</td><td>10.5 Visa fraud</td><td>Apr 8</td><td>Apr 28</td><td><span class="pill pp">Complete</span></td><td><span class="pill pp">Won ✓</span></td><td><button class="btn btn-ghost btn-sm">Details</button></td></tr>
+      <tr><td class="mn">CB-00288</td><td><strong>Ironvault Co</strong></td><td class="mn">$890</td><td>Mastercard</td><td>4853 Services</td><td>Apr 5</td><td>Apr 20</td><td><span class="pill pw">Partial</span></td><td><span class="pill po">Lost</span></td><td><button class="btn btn-ghost btn-sm">Details</button></td></tr>
+      <tr><td class="mn">CB-00287</td><td><strong>Dataloop AI</strong></td><td class="mn">$890</td><td>Amex</td><td>10.4 Fraud</td><td>Apr 3</td><td style="color:var(--red);font-weight:700">Apr 17 🔥</td><td><span class="pill po">None</span></td><td><span class="pill pc">Open</span></td><td><button class="btn btn-teal btn-sm">Submit evidence</button></td></tr>
+      <tr><td class="mn">CB-00285</td><td><strong>Crestline SaaS</strong></td><td class="mn">$24,100</td><td>Visa</td><td>10.4 Fraud</td><td>Mar 25</td><td style="color:var(--t4)">Expired</td><td><span class="pill po">None</span></td><td><span class="pill po">Uncontested</span></td><td><button class="btn btn-orange btn-sm">Was 74% winnable</button></td></tr>
+      <tr><td class="mn">CB-00284</td><td><strong>Juniper Analytics</strong></td><td class="mn">$9,100</td><td>Visa</td><td>10.4 Fraud</td><td>Mar 20</td><td style="color:var(--t4)">Expired</td><td><span class="pill po">None</span></td><td><span class="pill po">Uncontested</span></td><td><button class="btn btn-orange btn-sm">Was 81% winnable</button></td></tr>
+    </tbody></table>
+  </div>
+  <div class="grid g2" style="margin-top:4px">
+    <div class="card cp">
+      <div class="ct">Evidence checklist — CB-00291 (Acme Corp)</div>
+      <div class="csub">Visa 10.4 Fraud · Deadline: Apr 19</div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Transaction receipt</span><span class="pill pp">Uploaded</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ IP address match</span><span class="pill pp">Uploaded</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">❌ Signed delivery confirmation</span><span class="pill po">Missing</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">❌ Customer communication log</span><span class="pill po">Missing</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ 3DS authentication proof</span><span class="pill pp">Uploaded</span></div>
+      <div style="margin-top:14px;display:flex;gap:8px"><button class="btn btn-ghost btn-sm">+ Upload evidence</button><button class="btn btn-teal btn-sm">Submit to Visa →</button></div>
+    </div>
+    <div class="card cp">
+      <div class="ct">Win probability estimator</div>
+      <div class="csub">Based on reason code, evidence, and network rules</div>
+      <div style="padding:16px;background:var(--gbg);border:1px solid var(--gbd);border-radius:var(--r);margin-bottom:12px;text-align:center">
+        <div style="font-size:36px;font-weight:800;color:var(--green)">74%</div>
+        <div style="font-size:12px;color:var(--green);font-weight:600">Estimated win probability</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">CB-00291 · Acme Corp · Visa 10.4</div>
+      </div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">3DS authentication present</span><span style="color:var(--green);font-weight:600">+24%</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">Transaction receipt uploaded</span><span style="color:var(--green);font-weight:600">+18%</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">Missing delivery confirmation</span><span style="color:var(--red);font-weight:600">−15%</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">First-time disputer</span><span style="color:var(--green);font-weight:600">+12%</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ERT NOTIFICATIONS ══════════ -->
+<div class="view" id="view-ert">
+  <div class="pg-hdr"><div><div class="pg-title">ERT Notifications</div><div class="pg-sub">Early Resolution Tool — pre-dispute signals from Visa & Mastercard</div></div>
+  <div class="pg-acts"><button class="btn btn-upgrade" onclick="nav('api')">⚡ Enable Auto-Refund Rules</button></div></div>
+
+  <div style="background:linear-gradient(135deg,#0D1B2E,#1a3a2e);border-radius:var(--r2);padding:11px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:18px">⚡</span>
+    <span style="font-size:12.5px;color:rgba(255,255,255,.8);flex:1">ERT gives you a <strong style="color:var(--green-dot)">72-hour window</strong> to refund before a dispute escalates. Auto-refund rules handle this automatically.</span>
+    <button class="btn btn-upgrade btn-sm" onclick="nav('api')">Configure Auto-Refund Rules</button>
+  </div>
+
+  <div class="krow">
+    <div class="kcard"><div class="kl">Active ERT Alerts</div><div class="kv warn">12</div><div class="kd fl">$8,400 at risk</div><div class="kh">72hr window to resolve</div></div>
+    <div class="kcard"><div class="kl">Resolved This Month</div><div class="kv good">34</div><div class="kd up">▲ 8 vs last month</div><div class="kh">$22,100 in CBs prevented</div></div>
+    <div class="kcard"><div class="kl">Auto-resolved</div><div class="kv dark">0</div><div class="kd fl">Manual only</div><div class="kh" style="color:var(--orange)">Upgrade to automate</div></div>
+    <div class="kcard"><div class="kl">Avg Resolution Time</div><div class="kv warn">31hr</div><div class="kd fl">Target: &lt;24hr</div><div class="kh">Auto-refund: instant</div></div>
+  </div>
+
+  <div class="tc">
+    <div class="th"><div class="tt">Active ERT alerts</div><div class="ta"><button class="btn btn-ghost btn-sm">Resolve all</button></div></div>
+    <table><thead><tr><th>Alert ID</th><th>Customer</th><th>Amount</th><th>Network</th><th>Reason</th><th>Received</th><th>Expires</th><th>Recommended action</th><th></th></tr></thead><tbody>
+      <tr><td class="mn">ERT-0441</td><td><strong>Acme Corp</strong></td><td class="mn">$1,200</td><td>Visa</td><td>Fraud inquiry</td><td>Apr 14, 09:14</td><td style="color:var(--red);font-weight:700">Apr 16, 09:14 🔥</td><td>Issue refund</td><td><button class="btn btn-teal btn-sm">Refund now</button></td></tr>
+      <tr><td class="mn">ERT-0440</td><td><strong>Brightwave Inc</strong></td><td class="mn">$650</td><td>Mastercard</td><td>Not received</td><td>Apr 13, 14:22</td><td style="color:var(--yellow);font-weight:600">Apr 16, 14:22</td><td>Issue refund or provide proof</td><td><button class="btn btn-teal btn-sm">Refund now</button></td></tr>
+      <tr><td class="mn">ERT-0439</td><td><strong>Dataloop AI</strong></td><td class="mn">$890</td><td>Visa</td><td>Cancelled subscription</td><td>Apr 13, 11:05</td><td style="color:var(--yellow);font-weight:600">Apr 16, 11:05</td><td>Verify cancellation</td><td><button class="btn btn-ghost btn-sm">Review</button></td></tr>
+      <tr><td class="mn">ERT-0438</td><td><strong>Ironvault Co</strong></td><td class="mn">$310</td><td>Amex</td><td>Unrecognized charge</td><td>Apr 12, 16:40</td><td>Apr 15, 16:40</td><td>Issue refund</td><td><span class="pill pp">Resolved ✓</span></td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="card cp">
+    <div class="ct">ERT resolution history</div><div class="csub">Last 30 days</div>
+    <div style="height:150px"><canvas id="c-ert"></canvas></div>
+    <div class="leg"><div class="li"><div class="ld" style="background:var(--chart-g)"></div>Resolved (CB prevented)</div><div class="li"><div class="ld" style="background:var(--red)"></div>Escalated to chargeback</div></div>
+  </div>
+</div>
+
+<!-- ══════════ ALERTS ══════════ -->
+<div class="view" id="view-alerts">
+  <div class="pg-hdr"><div><div class="pg-title">Alerts</div><div class="pg-sub">Threshold alerts, anomaly detection, and notifications</div></div>
+  <div class="pg-acts"><button class="btn btn-navy">+ New Alert Rule</button></div></div>
+
+  <div class="krow">
+    <div class="kcard"><div class="kl">Active Alert Rules</div><div class="kv dark">8</div><div class="kd up">All rules running</div></div>
+    <div class="kcard"><div class="kl">Triggered (30d)</div><div class="kv warn">23</div><div class="kd dn">▲ 7 vs last month</div></div>
+    <div class="kcard"><div class="kl">Critical (unresolved)</div><div class="kv bad">3</div><div class="kd crit">Needs attention now</div></div>
+    <div class="kcard"><div class="kl">Notification channels</div><div class="kv dark">4</div><div class="kd fl">Email, Slack, SMS, Webhook</div></div>
+  </div>
+
+  <div class="tc">
+    <div class="th"><div class="tt">Alert rules</div><div class="ta"><button class="btn btn-navy btn-sm">+ Add rule</button></div></div>
+    <table><thead><tr><th>Rule name</th><th>Trigger</th><th>Threshold</th><th>Current value</th><th>Channels</th><th>Status</th><th></th></tr></thead><tbody>
+      <tr><td><strong>CB Ratio — Visa Critical</strong></td><td>CB/transaction ratio</td><td>&gt; 1.0%</td><td style="color:var(--red);font-weight:700">1.02% 🚨</td><td>Email, Slack</td><td><span class="pill pc">Triggered</span></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><strong>High-value CB alert</strong></td><td>Single CB amount</td><td>&gt; $10,000</td><td>$18,400 (CB-00291)</td><td>Email, SMS</td><td><span class="pill pc">Triggered</span></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><strong>Repeat disputer flagged</strong></td><td>Customer CB count</td><td>&gt; 3 in 90d</td><td>customer_44821 (14)</td><td>Email</td><td><span class="pill pc">Triggered</span></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><strong>ERT deadline warning</strong></td><td>ERT expiry</td><td>&lt; 12hr remaining</td><td>ERT-0441</td><td>Email, Slack</td><td><span class="pill pa">Active</span></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><strong>Fraud spike detection</strong></td><td>CBs in 24hr</td><td>&gt; 10 per day</td><td>4 today (normal)</td><td>Email, Webhook</td><td><span class="pill pa">Active</span></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+      <tr><td><strong>Win rate drop</strong></td><td>Win rate (7d rolling)</td><td>&lt; 25%</td><td>34% (OK)</td><td>Email</td><td><span class="pill pa">Active</span></td><td><button class="btn btn-ghost btn-sm">Edit</button></td></tr>
+    </tbody></table>
+  </div>
+
+  <div class="sec-h"><span class="sec-l">Recent notifications</span></div>
+  <div class="card cp" style="margin-bottom:0">
+    <div class="tl-item"><div class="tl-dot" style="background:var(--red)"></div><div><div class="tl-text"><strong>🚨 Critical:</strong> CB/transaction ratio exceeded Visa 1.0% threshold — now at 1.02%. Immediate action required to avoid Visa Dispute Monitoring Program.</div><div class="tl-time">Apr 14, 2025 · 10:32 AM · Sent to jane@company.com + #disputes-alerts</div></div></div>
+    <div class="tl-item"><div class="tl-dot" style="background:var(--red)"></div><div><div class="tl-text"><strong>🚨 High-value chargeback:</strong> $18,400 dispute filed by Acme Corp (CB-00291). Deadline Apr 19. Win probability: 74%.</div><div class="tl-time">Apr 12, 2025 · 2:14 PM · Sent to jane@company.com</div></div></div>
+    <div class="tl-item"><div class="tl-dot" style="background:var(--yellow)"></div><div><div class="tl-text"><strong>⚠️ Repeat disputer flagged:</strong> customer_id 44821 has filed 14 chargebacks in 90 days ($4,200 total). Block from future transactions?</div><div class="tl-time">Apr 11, 2025 · 9:05 AM · Sent to jane@company.com</div></div></div>
+    <div class="tl-item"><div class="tl-dot" style="background:var(--chart-g)"></div><div><div class="tl-text"><strong>✅ Case won:</strong> CB-00289 (Helix Cloud, $2,400) ruled in your favor. Revenue recovered.</div><div class="tl-time">Apr 9, 2025 · 4:48 PM · Sent to jane@company.com</div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ REPORTS ══════════ -->
+<div class="view" id="view-reports">
+  <div class="pg-hdr"><div><div class="pg-title">Reports</div><div class="pg-sub">Custom dispute analytics and scheduled exports</div></div>
+  <div class="pg-acts"><button class="btn btn-ghost">Export CSV</button><button class="btn btn-navy">+ New Report</button></div></div>
+  <div class="krow">
+    <div class="kcard"><div class="kl">Saved Reports</div><div class="kv dark">7</div><div class="kd fl">3 scheduled</div></div>
+    <div class="kcard"><div class="kl">Last Export</div><div class="kv dark">Apr 13</div><div class="kd fl">Monthly CB summary</div></div>
+    <div class="kcard"><div class="kl">Data freshness</div><div class="kv good">Live</div><div class="kd up">Updated 2 min ago</div></div>
+    <div class="kcard"><div class="kl">Formats available</div><div class="kv dark">4</div><div class="kd fl">PDF, CSV, JSON, Excel</div></div>
+  </div>
+  <div class="grid g2" style="margin-bottom:20px">
+    <div class="card cp">
+      <div class="ct">Report builder</div><div class="csub">Configure a custom report</div>
+      <div style="margin-bottom:10px"><label style="font-size:10.5px;font-weight:700;color:var(--t4);text-transform:uppercase;display:block;margin-bottom:4px">Report type</label><select class="sel" style="width:100%"><option>Chargeback summary</option><option>Win/loss analysis</option><option>Reason code breakdown</option><option>Geography analysis</option><option>Product risk report</option><option>Repeat disputer report</option></select></div>
+      <div style="margin-bottom:10px"><label style="font-size:10.5px;font-weight:700;color:var(--t4);text-transform:uppercase;display:block;margin-bottom:4px">Date range</label><select class="sel" style="width:100%"><option>Last 30 days</option><option>Last 90 days</option><option>Last 6 months</option><option>YTD</option><option>Custom</option></select></div>
+      <div style="margin-bottom:10px"><label style="font-size:10.5px;font-weight:700;color:var(--t4);text-transform:uppercase;display:block;margin-bottom:4px">Group by</label><select class="sel" style="width:100%"><option>Reason code</option><option>Card network</option><option>Product</option><option>Geography</option><option>Month</option></select></div>
+      <div style="margin-bottom:14px"><label style="font-size:10.5px;font-weight:700;color:var(--t4);text-transform:uppercase;display:block;margin-bottom:4px">Format</label><select class="sel" style="width:100%"><option>PDF</option><option>CSV</option><option>Excel</option><option>JSON</option></select></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-ghost" style="flex:1;justify-content:center">Preview</button><button class="btn btn-navy" style="flex:1;justify-content:center">Generate Report</button></div>
+    </div>
+    <div class="card cp">
+      <div class="ct">Saved reports</div><div class="csub">Run or schedule existing reports</div>
+      <div class="sr"><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Monthly CB Summary</div><div style="font-size:11px;color:var(--t4)">Runs 1st of each month · PDF</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">Run</button><button class="btn btn-ghost btn-sm">Edit</button></div></div>
+      <div class="sr"><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Weekly Risk Digest</div><div style="font-size:11px;color:var(--t4)">Every Monday · Email + PDF</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">Run</button><button class="btn btn-ghost btn-sm">Edit</button></div></div>
+      <div class="sr"><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Reason Code Analysis</div><div style="font-size:11px;color:var(--t4)">Manual · CSV</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">Run</button><button class="btn btn-ghost btn-sm">Edit</button></div></div>
+      <div class="sr"><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Repeat Disputer Report</div><div style="font-size:11px;color:var(--t4)">Manual · Excel</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">Run</button><button class="btn btn-ghost btn-sm">Edit</button></div></div>
+      <div class="sr"><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Geography Fraud Map</div><div style="font-size:11px;color:var(--t4)">Manual · PDF</div></div><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">Run</button><button class="btn btn-ghost btn-sm">Edit</button></div></div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card cp">
+      <div class="ct">Win/loss trend — last 6 months</div>
+      <div class="csub">Monthly contested case outcomes</div>
+      <div style="height:160px"><canvas id="c-report-wl"></canvas></div>
+      <div class="leg"><div class="li"><div class="ld" style="background:#2DB87A"></div>Won</div><div class="li"><div class="ld" style="background:#DC2626"></div>Lost</div><div class="li"><div class="ld" style="background:#F59E0B"></div>Pending</div></div>
+    </div>
+    <div class="card cp">
+      <div class="ct">CB volume by card network</div>
+      <div class="csub">Last 90 days — dispute distribution</div>
+      <div style="height:160px"><canvas id="c-report-network"></canvas></div>
+      <div class="leg"><div class="li"><div class="ld" style="background:#1D4ED8"></div>Visa · 52%</div><div class="li"><div class="ld" style="background:#EA580C"></div>Mastercard · 31%</div><div class="li"><div class="ld" style="background:#7C3AED"></div>Amex · 12%</div><div class="li"><div class="ld" style="background:#D1D5DB"></div>Discover · 5%</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ WEBHOOKS ══════════ -->
+<div class="view" id="view-webhooks">
+  <div class="pg-hdr"><div><div class="pg-title">Webhooks</div><div class="pg-sub">Real-time event notifications to your systems</div></div>
+  <div class="pg-acts"><button class="btn btn-navy">+ Add Endpoint</button></div></div>
+  <div class="krow">
+    <div class="kcard"><div class="kl">Active Endpoints</div><div class="kv dark">3</div><div class="kd up">All healthy</div></div>
+    <div class="kcard"><div class="kl">Events (24hr)</div><div class="kv dark">47</div><div class="kd up">100% delivered</div></div>
+    <div class="kcard"><div class="kl">Failed (7d)</div><div class="kv good">0</div><div class="kd up">No failures</div></div>
+    <div class="kcard"><div class="kl">Avg Latency</div><div class="kv good">142ms</div><div class="kd up">↓ 12ms</div></div>
+  </div>
+  <div class="card cp" style="margin-bottom:20px">
+    <div class="ct" style="margin-bottom:14px">Webhook endpoints</div>
+    <div class="webhook-row">
+      <div style="flex:1"><div class="webhook-name">Primary — Disputes CRM</div><div class="webhook-url">https://api.yourcompany.com/webhooks/disputes</div></div>
+      <span class="pill pp">Active</span>
+      <button class="toggle on" onclick="this.classList.toggle('on')" title="Toggle"></button>
+      <button class="btn btn-ghost btn-sm">Test</button><button class="btn btn-ghost btn-sm">Edit</button>
+    </div>
+    <div class="webhook-row">
+      <div style="flex:1"><div class="webhook-name">Slack — #disputes-alerts</div><div class="webhook-url">https://hooks.slack.com/services/T04XXXX/B04XXXX/xxxx</div></div>
+      <span class="pill pp">Active</span>
+      <button class="toggle on" onclick="this.classList.toggle('on')" title="Toggle"></button>
+      <button class="btn btn-ghost btn-sm">Test</button><button class="btn btn-ghost btn-sm">Edit</button>
+    </div>
+    <div class="webhook-row">
+      <div style="flex:1"><div class="webhook-name">Data Warehouse — Snowflake</div><div class="webhook-url">https://ingest.snowflakecomputing.com/v1/data/disputes</div></div>
+      <span class="pill pw">Inactive</span>
+      <button class="toggle" onclick="this.classList.toggle('on')" title="Toggle"></button>
+      <button class="btn btn-ghost btn-sm">Test</button><button class="btn btn-ghost btn-sm">Edit</button>
+    </div>
+  </div>
+  <div class="card cp">
+    <div class="ct" style="margin-bottom:14px">Event types</div>
+    <table><thead><tr><th>Event</th><th>Description</th><th>Enabled</th></tr></thead><tbody>
+      <tr><td><code class="mn">dispute.created</code></td><td style="color:var(--t2)">New chargeback received from card network</td><td><button class="toggle on" onclick="this.classList.toggle('on')"></button></td></tr>
+      <tr><td><code class="mn">dispute.won</code></td><td style="color:var(--t2)">Dispute resolved in your favor</td><td><button class="toggle on" onclick="this.classList.toggle('on')"></button></td></tr>
+      <tr><td><code class="mn">dispute.lost</code></td><td style="color:var(--t2)">Dispute resolved against you</td><td><button class="toggle on" onclick="this.classList.toggle('on')"></button></td></tr>
+      <tr><td><code class="mn">ert.received</code></td><td style="color:var(--t2)">Early resolution notification received</td><td><button class="toggle on" onclick="this.classList.toggle('on')"></button></td></tr>
+      <tr><td><code class="mn">ert.expiring</code></td><td style="color:var(--t2)">ERT window expiring in &lt;12 hours</td><td><button class="toggle on" onclick="this.classList.toggle('on')"></button></td></tr>
+      <tr><td><code class="mn">ratio.threshold</code></td><td style="color:var(--t2)">CB/transaction ratio exceeded threshold</td><td><button class="toggle on" onclick="this.classList.toggle('on')"></button></td></tr>
+      <tr><td><code class="mn">representment.submitted</code></td><td style="color:var(--t2)">Auto-representment submitted to network <span style="font-size:10px;color:var(--orange);font-weight:600">— Upgrade to unlock</span></td><td><button class="toggle" onclick="this.classList.toggle('on')"></button></td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- ══════════ API CONNECT (UPGRADE PAGE) ══════════ -->
+<div class="view" id="view-api">
+  <div class="pg-hdr"><div><div class="pg-title">API Connect & Auto-Representment</div><div class="pg-sub">Connect your payment stack and activate automated chargeback recovery</div></div></div>
+
+  <!-- HERO UPGRADE CARD -->
+  <div style="background:linear-gradient(135deg,#0D1B2E 0%,#1a3a2e 60%,#0D3D1E 100%);border-radius:12px;padding:24px 28px;margin-bottom:18px;position:relative;overflow:hidden">
+    <div style="position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:80px;opacity:.08">🛡️</div>
+    <div style="font-size:12px;font-weight:700;color:var(--green-dot);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">⚡ PREMIUM FEATURE</div>
+    <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px">Activate Automatic Representment<br>and stop losing money to chargebacks</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.7;max-width:600px;margin-bottom:20px">Our AI analyzes every chargeback, builds the optimal evidence package, and submits a representment within minutes — automatically. <strong style="color:var(--green-dot)">Average 68% win rate</strong>. Works for Visa, Mastercard, Amex, and Discover.</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+      <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:14px 18px;text-align:center;min-width:120px"><div style="font-size:24px;font-weight:800;color:var(--green-dot)">68%</div><div style="font-size:11px;color:rgba(255,255,255,.6)">Avg win rate</div></div>
+      <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:14px 18px;text-align:center;min-width:120px"><div style="font-size:24px;font-weight:800;color:var(--green-dot)">&lt;5min</div><div style="font-size:11px;color:rgba(255,255,255,.6)">Response time</div></div>
+      <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:14px 18px;text-align:center;min-width:120px"><div style="font-size:24px;font-weight:800;color:var(--green-dot)">$68K</div><div style="font-size:11px;color:rgba(255,255,255,.6)">Est. monthly recovery</div></div>
+      <div style="background:rgba(255,255,255,.08);border-radius:8px;padding:14px 18px;text-align:center;min-width:120px"><div style="font-size:24px;font-weight:800;color:var(--green-dot)">Zero</div><div style="font-size:11px;color:rgba(255,255,255,.6)">Manual effort</div></div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-upgrade" style="font-size:14px;padding:10px 24px;height:auto">⚡ Activate Auto-Representment — First Month Free</button>
+      <span style="font-size:12px;color:rgba(255,255,255,.5)">No setup fee · Cancel anytime · Success-based pricing</span>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="sec-h"><span class="sec-l">Pricing plans</span></div>
+  <div class="grid g3" style="margin-bottom:18px">
+    <div class="card cp" style="border:2px solid var(--bd)">
+      <div style="font-size:11px;font-weight:700;color:var(--t4);text-transform:uppercase;margin-bottom:8px">Free</div>
+      <div style="font-size:28px;font-weight:800;color:var(--t1);margin-bottom:4px">$0</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:16px">per month</div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Analytics dashboard</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Case management</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ ERT notifications</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Basic alerts (3 rules)</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t4)">❌ Auto-representment</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t4)">❌ Priority support</span></div>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:16px" disabled>Current plan</button>
+    </div>
+    <div class="card cp" style="border:2px solid var(--teal);position:relative">
+      <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:0 0 6px 6px;text-transform:uppercase;letter-spacing:.5px">Most popular</div>
+      <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;margin-bottom:8px;margin-top:10px">Growth</div>
+      <div style="font-size:28px;font-weight:800;color:var(--t1);margin-bottom:4px">$299<span style="font-size:14px;font-weight:500;color:var(--t3)">/mo</span></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:16px">+ 15% of recovered revenue</div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Everything in Free</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Auto-representment (Visa + MC)</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Unlimited alert rules</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Auto-refund rules (ERT)</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Priority support (4hr SLA)</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t4)">❌ Amex + Discover</span></div>
+      <button class="btn btn-teal" style="width:100%;justify-content:center;margin-top:16px">⚡ Upgrade — First Month Free</button>
+    </div>
+    <div class="card cp" style="border:2px solid var(--purple)">
+      <div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;margin-bottom:8px">Enterprise</div>
+      <div style="font-size:28px;font-weight:800;color:var(--t1);margin-bottom:4px">Custom</div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:16px">Volume-based pricing</div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Everything in Growth</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ All card networks</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Dedicated success manager</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ Custom integrations</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ SLA guarantee (99.9%)</span></div>
+      <div class="sr"><span style="font-size:12px;color:var(--t2)">✅ White-glove onboarding</span></div>
+      <button class="btn btn-navy" style="width:100%;justify-content:center;margin-top:16px">Talk to sales →</button>
+    </div>
+  </div>
+
+  <!-- API CONNECT -->
+  <div class="sec-h"><span class="sec-l">API credentials</span></div>
+  <div class="grid g2">
+    <div class="card cp">
+      <div class="ct" style="margin-bottom:14px">Your API keys</div>
+      <div style="margin-bottom:10px"><div style="font-size:10.5px;font-weight:700;color:var(--t4);text-transform:uppercase;margin-bottom:6px">Publishable key</div><div class="api-field"><span class="mn">pk_live_disputes_****4a8f</span><button class="btn btn-ghost btn-sm">Copy</button></div></div>
+      <div style="margin-bottom:14px"><div style="font-size:10.5px;font-weight:700;color:var(--t4);text-transform:uppercase;margin-bottom:6px">Secret key</div><div class="api-field"><span>••••••••••••••••••••••••</span><button class="btn btn-ghost btn-sm">Reveal</button></div></div>
+      <div style="display:flex;gap:8px"><button class="btn btn-ghost btn-sm">Rotate keys</button><button class="btn btn-ghost btn-sm">View docs ↗</button></div>
+    </div>
+    <div class="card cp">
+      <div class="ct" style="margin-bottom:14px">Connected payment processors</div>
+      <div class="sr"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;background:#635BFF;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff">S</div><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Stripe</div><div style="font-size:11px;color:var(--t4)">Connected · Live mode</div></div></div><span class="pill pp">Active</span></div>
+      <div class="sr"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;background:#003087;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff">P</div><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">PayPal</div><div style="font-size:11px;color:var(--t4)">Not connected</div></div></div><button class="btn btn-ghost btn-sm">Connect</button></div>
+      <div class="sr"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;background:#1DA462;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff">Br</div><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Braintree</div><div style="font-size:11px;color:var(--t4)">Not connected</div></div></div><button class="btn btn-ghost btn-sm">Connect</button></div>
+      <div class="sr"><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;background:#0070BA;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff">Z</div><div><div style="font-size:12.5px;font-weight:600;color:var(--t1)">Zuora Payments</div><div style="font-size:11px;color:var(--t4)">Auto-detected · Connected</div></div></div><span class="pill pp">Active</span></div>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+</div>
+</div>
+
+<!-- TOUR -->
+<div id="tour-ov">
+  <div class="tour-spot" id="t-spot"></div>
+  <div class="tour-card" id="t-card">
+    <div class="tour-num"><button class="tour-back" id="t-prev" style="display:none">←</button><span id="t-num">1 / 7</span></div>
+    <div class="tour-title" id="t-title"></div>
+    <div class="tour-body" id="t-body"></div>
+    <div class="tour-footer"><button class="tour-skip" id="t-skip">Skip</button><button class="tour-next" id="t-next">Next</button></div>
+    <div class="tour-brand">Powered by Zuora Disputes</div>
+  </div>
+</div>
+
+<script>
+// ── NAV ──
+const PAGES = {
+  'overview': 'Overview','cases':'Case Management','ert':'ERT Notifications',
+  'alerts':'Alerts','reports':'Reports','webhooks':'Webhooks','api':'API Connect'
+};
+
+function nav(p) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.sb-sub-item').forEach(i => i.classList.remove('active'));
+  const v = document.getElementById('view-' + p);
+  if (v) v.classList.add('active');
+  const s = document.querySelector(`.sb-sub-item[data-view="${p}"]`);
+  if (s) s.classList.add('active');
+  document.getElementById('bc-sep2').style.display = '';
+  document.getElementById('bc-page').textContent = PAGES[p] || p;
+  requestAnimationFrame(() => initCharts(p));
+  document.getElementById('content').scrollTop = 0;
+}
+
+document.querySelectorAll('.sb-sub-item[data-view]').forEach(el =>
+  el.addEventListener('click', () => nav(el.dataset.view))
+);
+
+// ── CHARTS ──
+const MO3 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const GR = 'rgba(0,0,0,0.04)';
+const TK = {color:'#9CA3AF', font:{size:10, family:'Plus Jakarta Sans'}};
+const CI = {};
+function mc(id, cfg) {
+  if (CI[id]) { try{CI[id].destroy()}catch(e){} delete CI[id]; }
+  const el = document.getElementById(id);
+  if (!el) return;
+  try { CI[id] = new Chart(el, cfg); } catch(e) {}
+}
+
+function initCharts(p) {
+  if (p === 'overview') {
+    mc('c-trend', {type:'bar', data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar','Apr (proj)'],
+      datasets:[
+        {label:'CBs',data:[198,212,231,248,261,284,290],backgroundColor:'rgba(220,38,38,0.15)',borderColor:'#DC2626',borderWidth:2,type:'bar',borderRadius:3,yAxisID:'y'},
+        {label:'CB Ratio %',data:[0.72,0.78,0.82,0.88,0.94,1.02,1.04],borderColor:'#2DB87A',backgroundColor:'transparent',type:'line',tension:0.4,pointRadius:4,borderWidth:2.5,pointBackgroundColor:'#2DB87A',yAxisID:'y2'}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{grid:{display:false},ticks:TK},
+          y:{grid:{color:GR},ticks:{...TK,callback:v=>v+' CBs'},position:'left',min:160,suggestedMax:320},
+          y2:{grid:{display:false},ticks:{...TK,callback:v=>v+'%'},position:'right',min:0.6,max:1.2}}}});
+
+    mc('c-outcomes', {type:'doughnut', data:{labels:['Uncontested','Contested lost','Won'],
+      datasets:[{data:[66,23,11],backgroundColor:['#DC2626','#F59E0B','#2DB87A'],borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false}}}});
+
+    mc('c-reasons', {type:'bar', data:{
+      labels:['10.4 Fraud','13.1 Not rcvd','4853 Service','10.5 Visa','41 Cancelled','Other'],
+      datasets:[{data:[112,58,44,31,24,15],backgroundColor:['#DC2626','#EF4444','#F97316','#F59E0B','#FCD34D','#D1D5DB'],borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},
+        scales:{x:{grid:{color:GR},ticks:TK},y:{grid:{display:false},ticks:TK}}}});
+
+    mc('c-products', {type:'bar', data:{
+      labels:['Enterprise','Professional','Starter','API Usage','Add-ons'],
+      datasets:[{label:'CBs',data:[98,74,62,31,19],backgroundColor:'rgba(220,38,38,0.2)',borderColor:'#DC2626',borderWidth:1.5,borderRadius:3},
+                {label:'Win rate',data:[42,38,28,22,55],backgroundColor:'rgba(45,184,122,0.2)',borderColor:'#2DB87A',borderWidth:1.5,borderRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10,family:'Plus Jakarta Sans'},color:'#6B7280'}}},
+        scales:{x:{grid:{display:false},ticks:TK},y:{grid:{color:GR},ticks:TK}}}});
+
+    mc('c-recovery', {type:'bar', data:{
+      labels:['Current manual','With auto-rep'],
+      datasets:[{label:'Recovered',data:[23100,68400],backgroundColor:['#F59E0B','#2DB87A'],borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:10}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+Math.round(c.raw/1000)+'K'}}},
+        scales:{x:{grid:{display:false},ticks:TK},y:{grid:{color:GR},ticks:{...TK,callback:v=>'$'+Math.round(v/1000)+'K'},min:0,suggestedMax:80000}}}}});
+  }
+  if (p === 'reports') {
+    mc('c-report-wl', {type:'bar', data:{labels:['Oct','Nov','Dec','Jan','Feb','Mar'],
+      datasets:[
+        {label:'Won',data:[8,11,9,12,10,14],backgroundColor:'#2DB87A',borderRadius:3},
+        {label:'Lost',data:[18,21,24,22,26,28],backgroundColor:'#DC2626',borderRadius:3},
+        {label:'Pending',data:[4,3,5,6,4,7],backgroundColor:'#F59E0B',borderRadius:3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:0},plugins:{legend:{display:false}},
+        scales:{x:{stacked:true,grid:{display:false},ticks:TK},y:{stacked:true,grid:{color:GR},ticks:{...TK,beginAtZero:true}}}}});
+    mc('c-report-network', {type:'doughnut', data:{labels:['Visa','Mastercard','Amex','Discover'],
+      datasets:[{data:[52,31,12,5],backgroundColor:['#1D4ED8','#EA580C','#7C3AED','#D1D5DB'],borderWidth:0,hoverOffset:4}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}});
+  }
+  if (p === 'ert') {
+    const days = Array.from({length:30},(_,i)=>'Mar '+(i+1));
+    mc('c-ert', {type:'bar', data:{labels:days.slice(-14).map((_,i)=>`Apr ${i+1}`),
+      datasets:[
+        {label:'Resolved',data:[3,2,4,1,3,5,2,4,3,2,3,4,2,5],backgroundColor:'#2DB87A',borderRadius:3},
+        {label:'Escalated',data:[1,0,1,2,0,1,0,1,1,0,2,0,1,0],backgroundColor:'#DC2626',borderRadius:3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:0},plugins:{legend:{display:false}},
+        scales:{x:{stacked:true,grid:{display:false},ticks:TK},y:{stacked:true,grid:{color:GR},ticks:{...TK,beginAtZero:true},min:0,max:8}}}});
+  }
+}
+
+function filterTable(inp, id) {
+  const q = inp.value.toLowerCase();
+  document.querySelectorAll('#'+id+' tbody tr').forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── TOUR ──
+const STEPS = [
+  {title:'Welcome to Zuora Disputes',
+   body:'This is your chargeback command center — built natively inside Zuora. Monitor your dispute health, fight chargebacks, and see where you\'re losing revenue.',
+   target:null},
+  {title:'Your chargeback health score',
+   body:'Your CB-to-transaction ratio is 1.02% — above Visa\'s 1.0% threshold. The red indicators show where you need to act immediately to avoid the Visa Dispute Monitoring Program.',
+   target:'.krow5',arrow:'down'},
+  {title:'Revenue you\'re losing right now',
+   body:'$47,200/month in chargebacks were never contested. That money is gone forever — unless you activate auto-representment. The upgrade banner shows your exact recovery potential.',
+   target:'.upgrade-banner',arrow:'down'},
+  {title:'Fraud by geography & reason code',
+   body:'72% of your chargebacks originate from the US, and "10.4 Fraud" is your #1 reason code. These charts help you identify patterns and prevent future disputes.',
+   target:'.grid.g3',arrow:'down'},
+  {title:'Fight cases before deadlines expire',
+   body:'Open cases have hard deadlines — after they expire, the money is gone. Cases marked 🔥 expire within 7 days. Click "Fight" to submit evidence for any open dispute.',
+   target:'#t-recent',arrow:'down'},
+  {title:'Navigate to any section',
+   body:'Use the sidebar under Disputes to access Case Management, ERT Notifications, Alerts, Reports, Webhooks, and API Connect.',
+   target:'#sub-disputes',arrow:'right'},
+  {title:'Activate auto-representment',
+   body:'Click "API Connect" in the sidebar to see pricing and activate automatic chargeback recovery. First month free. Average 68% win rate. Zero manual effort.',
+   target:null}
+];
+
+let STEP = 0;
+const TOV = document.getElementById('tour-ov');
+const TSPOT = document.getElementById('t-spot');
+const TCARD = document.getElementById('t-card');
+const TTITLE = document.getElementById('t-title');
+const TBODY = document.getElementById('t-body');
+const TNUM = document.getElementById('t-num');
+const TNEXT = document.getElementById('t-next');
+const TPREV = document.getElementById('t-prev');
+const TSKIP = document.getElementById('t-skip');
+
+function renderTour(i) {
+  const s = STEPS[i];
+  TTITLE.textContent = s.title;
+  TBODY.innerHTML = s.body;
+  TNUM.textContent = (i+1) + ' / ' + STEPS.length;
+  TPREV.style.display = i > 0 ? 'inline' : 'none';
+  TNEXT.textContent = i === STEPS.length-1 ? 'Get started' : 'Next';
+  // Always position card in bottom-right corner, spotlight on element
+  if (s.target) {
+    const el = document.querySelector(s.target);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      const P = 4;
+      TSPOT.style.cssText = `left:${r.left-P}px;top:${r.top-P}px;width:${r.width+P*2}px;height:${r.height+P*2}px`;
+    } else {
+      TSPOT.style.cssText = 'left:0;top:0;width:0;height:0';
+    }
+  } else {
+    TSPOT.style.cssText = 'left:0;top:0;width:0;height:0';
+  }
+  // Card always bottom-right, never overlapping content
+  TCARD.className = 'tour-card';
+  TCARD.style.cssText = `right:24px;bottom:24px;left:auto;top:auto;transform:none`;
+}
+
+TNEXT.addEventListener('click', () => { if(STEP<STEPS.length-1){STEP++;renderTour(STEP);}else{TOV.style.display='none';} });
+TPREV.addEventListener('click', () => { if(STEP>0){STEP--;renderTour(STEP);} });
+TSKIP.addEventListener('click', () => TOV.style.display='none');
+
+window.addEventListener('DOMContentLoaded', () => {
+  nav('overview');
+  setTimeout(() => {
+    TOV.style.display = 'block';
+    renderTour(0);
+  }, 400);
+});
+</script>
+</body>
+</html>
